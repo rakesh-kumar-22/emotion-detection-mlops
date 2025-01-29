@@ -5,10 +5,17 @@ import mlflow
 import logging
 import os
 import dagshub
+# Set up DagsHub credentials for MLflow tracking
+dagshub_token = os.getenv("DAGSHUB_PAT")
+if not dagshub_token:
+    raise EnvironmentError("DAGSHUB_PAT environment variable is not set")
 
-mlflow.set_tracking_uri("https://dagshub.com/rakesh-kumar-22/emotion-detection-mlops.mlflow")
-dagshub.init(repo_owner='rakesh-kumar-22', repo_name='emotion-detection-mlops', mlflow=True)
+os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
+os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
 
+dagshub_url = "https://dagshub.com"
+repo_owner = "rakesh-kumar-22"
+repo_name = "emotion-detection-mlops"
 
 
 # logging configuration
