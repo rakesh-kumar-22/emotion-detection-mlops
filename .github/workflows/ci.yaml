@@ -1,0 +1,22 @@
+name: ci pipeline
+
+on: push
+
+jobs:
+  project-testing:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: code checkout
+        uses: actions/checkout@v2
+
+      - name: install python
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: install dependencies
+        run:
+        pip install -r requirements.txt
+      - name: run pipeline
+        run:
+          dvc repro
