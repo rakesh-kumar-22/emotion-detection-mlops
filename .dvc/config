@@ -1,4 +1,4 @@
 [core]
     remote = myremote
 ['remote "myremote"']
-    url = s3://rakesh-bucket2
+    url = s3://mini-project-bucket1
