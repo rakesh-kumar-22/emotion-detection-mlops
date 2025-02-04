@@ -1,5 +1,5 @@
 #Base
-FROM python:3.10
+FROM python:3.12.6
 
 #workdirectory
 WORKDIR /app

@@ -30,20 +30,30 @@ class TestModelLoading(unittest.TestCase):
         # Load the new model from MLflow model registry
         cls.new_model_name = "my_model"
         cls.new_model_version = cls.get_latest_model_version(cls.new_model_name)
+
+        if cls.new_model_version is None:
+            raise ValueError(f"No available model versions found for '{cls.new_model_name}'. Please register a model.")
+
         cls.new_model_uri = f'models:/{cls.new_model_name}/{cls.new_model_version}'
         cls.new_model = mlflow.pyfunc.load_model(cls.new_model_uri)
 
         # Load the vectorizer
-        cls.vectorizer = pickle.load(open('models/vectorizer.pkl', 'rb'))
+        with open('models/vectorizer.pkl', 'rb') as f:
+            cls.vectorizer = pickle.load(f)
 
         # Load holdout test data
         cls.holdout_data = pd.read_csv('data/processed/test_bow.csv')
 
     @staticmethod
-    def get_latest_model_version(model_name, stage="Staging"):
+    def get_latest_model_version(model_name, stage=None):
         client = mlflow.MlflowClient()
-        latest_version = client.get_latest_versions(model_name, stages=[stage])
-        return latest_version[0].version if latest_version else None
+        latest_version = client.get_latest_versions(model_name, stages=[stage] if stage else None)
+
+        if not latest_version:
+            print(f"No registered model versions found for '{model_name}' in stage '{stage}'.")
+            return None
+
+        return latest_version[0].version
 
     def test_model_loaded_properly(self):
         self.assertIsNotNone(self.new_model)
@@ -70,7 +80,8 @@ class TestModelLoading(unittest.TestCase):
         y_holdout = self.holdout_data.iloc[:,-1]
 
         # Predict using the new model
-        y_pred_new = self.new_model.predict(X_holdout)
+        input_data = pd.DataFrame(X_holdout.values)  # Remove feature names to match the model
+        y_pred_new = self.new_model.predict(input_data)
 
         # Calculate performance metrics for the new model
         accuracy_new = accuracy_score(y_holdout, y_pred_new)
@@ -92,4 +103,3 @@ class TestModelLoading(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-    
